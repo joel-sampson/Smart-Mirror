@@ -2,36 +2,36 @@
 # requirements
 # requests, feedparser, traceback, Pillow
 
-from Tkinter import *
-import locale
-import threading
-import time
-import requests
-import json
-import traceback
-import feedparser
-
 from PIL import Image, ImageTk
 from contextlib import contextmanager
+from tkinter import (BOTH, BOTTOM, E, LEFT, Label, N, RIGHT, S, TOP, Tk, W, YES, Frame)
+import feedparser
+import json
+import locale
+import requests
+import threading
+import time
+import traceback
 
 LOCALE_LOCK = threading.Lock()
 
-ui_locale = '' # e.g. 'fr_FR' fro French, '' as default
-time_format = 12 # 12 or 24
-date_format = "%b %d, %Y" # check python doc for strftime() for options
+ui_locale = ''  # e.g. 'fr_FR' fro French, '' as default
+time_format = 12  # 12 or 24
+date_format = "%b %d, %Y"  # check python doc for strftime() for options
 news_country_code = 'us'
-weather_api_token = '<TOKEN>' # create account at https://darksky.net/dev/
-weather_lang = 'en' # see https://darksky.net/dev/docs/forecast for full list of language parameters values
-weather_unit = 'us' # see https://darksky.net/dev/docs/forecast for full list of unit parameters values
-latitude = None # Set this if IP location lookup does not work for you (must be a string)
-longitude = None # Set this if IP location lookup does not work for you (must be a string)
+weather_api_token = '<TOKEN>'  # create account at https://darksky.net/dev/
+weather_lang = 'en'  # see https://darksky.net/dev/docs/forecast for full list of language parameters values
+weather_unit = 'us'  # see https://darksky.net/dev/docs/forecast for full list of unit parameters values
+latitude = None  # Set this if IP location lookup does not work for you (must be a string)
+longitude = None  # Set this if IP location lookup does not work for you (must be a string)
 xlarge_text_size = 94
 large_text_size = 48
 medium_text_size = 28
 small_text_size = 18
 
+
 @contextmanager
-def setlocale(name): #thread proof function to work with locale
+def setlocale(name):  # thread proof function to work with locale
     with LOCALE_LOCK:
         saved = locale.setlocale(locale.LC_ALL)
         try:
@@ -39,11 +39,12 @@ def setlocale(name): #thread proof function to work with locale
         finally:
             locale.setlocale(locale.LC_ALL, saved)
 
+
 # maps open weather icons to
 # icon reading is not impacted by the 'lang' parameter
 icon_lookup = {
     'clear-day': "assets/Sun.png",  # clear sky day
-    'wind': "assets/Wind.png",   #wind
+    'wind': "assets/Wind.png",  # wind
     'cloudy': "assets/Cloud.png",  # cloudy day
     'partly-cloudy-day': "assets/PartlySunny.png",  # partly cloudy day
     'rain': "assets/Rain.png",  # rain day
@@ -53,7 +54,7 @@ icon_lookup = {
     'clear-night': "assets/Moon.png",  # clear sky night
     'partly-cloudy-night': "assets/PartlyMoon.png",  # scattered clouds night
     'thunderstorm': "assets/Storm.png",  # thunderstorm
-    'tornado': "assests/Tornado.png",    # tornado
+    'tornado': "assests/Tornado.png",  # tornado
     'hail': "assests/Hail.png"  # hail
 }
 
@@ -78,9 +79,9 @@ class Clock(Frame):
     def tick(self):
         with setlocale(ui_locale):
             if time_format == 12:
-                time2 = time.strftime('%I:%M %p') #hour in 12h format
+                time2 = time.strftime('%I:%M %p')  # hour in 12h format
             else:
-                time2 = time.strftime('%H:%M') #hour in 24h format
+                time2 = time.strftime('%H:%M')  # hour in 24h format
 
             day_of_week2 = time.strftime('%A')
             date2 = time.strftime(date_format)
@@ -147,16 +148,18 @@ class Weather(Frame):
                 location2 = "%s, %s" % (location_obj['city'], location_obj['region_code'])
 
                 # get weather
-                weather_req_url = "https://api.darksky.net/forecast/%s/%s,%s?lang=%s&units=%s" % (weather_api_token, lat,lon,weather_lang,weather_unit)
+                weather_req_url = "https://api.darksky.net/forecast/%s/%s,%s?lang=%s&units=%s" % (
+                weather_api_token, lat, lon, weather_lang, weather_unit)
             else:
                 location2 = ""
                 # get weather
-                weather_req_url = "https://api.darksky.net/forecast/%s/%s,%s?lang=%s&units=%s" % (weather_api_token, latitude, longitude, weather_lang, weather_unit)
+                weather_req_url = "https://api.darksky.net/forecast/%s/%s,%s?lang=%s&units=%s" % (
+                weather_api_token, latitude, longitude, weather_lang, weather_unit)
 
             r = requests.get(weather_req_url)
             weather_obj = json.loads(r.text)
 
-            degree_sign= u'\N{DEGREE SIGN}'
+            degree_sign = u'\N{DEGREE SIGN}'
             temperature2 = "%s%s" % (str(int(weather_obj['currently']['temperature'])), degree_sign)
             currently2 = weather_obj['currently']['summary']
             forecast2 = weather_obj["hourly"]["summary"]
@@ -199,7 +202,7 @@ class Weather(Frame):
                     self.locationLbl.config(text=location2)
         except Exception as e:
             traceback.print_exc()
-            print "Error: %s. Cannot get weather." % e
+            print(f"Error: {e}. Cannot get weather.")
 
         self.after(600000, self.get_weather)
 
@@ -212,7 +215,7 @@ class News(Frame):
     def __init__(self, parent, *args, **kwargs):
         Frame.__init__(self, parent, *args, **kwargs)
         self.config(bg='black')
-        self.title = 'News' # 'News' is more internationally generic
+        self.title = 'News'  # 'News' is more internationally generic
         self.newsLbl = Label(self, text=self.title, font=('Helvetica', medium_text_size), fg="white", bg="black")
         self.newsLbl.pack(side=TOP, anchor=W)
         self.headlinesContainer = Frame(self, bg="black")
@@ -227,7 +230,7 @@ class News(Frame):
             if news_country_code == None:
                 headlines_url = "https://news.google.com/news?ned=us&output=rss"
             else:
-                headlines_url = "https://news.google.com/news?ned=%s&output=rss" % news_country_code
+                headlines_url = f"https://news.google.com/news?ned={news_country_code}&output=rss"
 
             feed = feedparser.parse(headlines_url)
 
@@ -236,7 +239,7 @@ class News(Frame):
                 headline.pack(side=TOP, anchor=W)
         except Exception as e:
             traceback.print_exc()
-            print "Error: %s. Cannot get news." % e
+            print(f"Error: {e}. Cannot get news.")
 
         self.after(600000, self.get_headlines)
 
@@ -255,7 +258,8 @@ class NewsHeadline(Frame):
         self.iconLbl.pack(side=LEFT, anchor=N)
 
         self.eventName = event_name
-        self.eventNameLbl = Label(self, text=self.eventName, font=('Helvetica', small_text_size), fg="white", bg="black")
+        self.eventNameLbl = Label(self, text=self.eventName, font=('Helvetica', small_text_size), fg="white",
+                                  bg="black")
         self.eventNameLbl.pack(side=LEFT, anchor=N)
 
 
@@ -270,7 +274,7 @@ class Calendar(Frame):
         self.get_events()
 
     def get_events(self):
-        #TODO: implement this method
+        # TODO: implement this method
         # reference https://developers.google.com/google-apps/calendar/quickstart/python
 
         # remove all children
@@ -286,7 +290,8 @@ class CalendarEvent(Frame):
     def __init__(self, parent, event_name="Event 1"):
         Frame.__init__(self, parent, bg='black')
         self.eventName = event_name
-        self.eventNameLbl = Label(self, text=self.eventName, font=('Helvetica', small_text_size), fg="white", bg="black")
+        self.eventNameLbl = Label(self, text=self.eventName, font=('Helvetica', small_text_size), fg="white",
+                                  bg="black")
         self.eventNameLbl.pack(side=TOP, anchor=E)
 
 
@@ -295,10 +300,10 @@ class FullscreenWindow:
     def __init__(self):
         self.tk = Tk()
         self.tk.configure(background='black')
-        self.topFrame = Frame(self.tk, background = 'black')
-        self.bottomFrame = Frame(self.tk, background = 'black')
-        self.topFrame.pack(side = TOP, fill=BOTH, expand = YES)
-        self.bottomFrame.pack(side = BOTTOM, fill=BOTH, expand = YES)
+        self.topFrame = Frame(self.tk, background='black')
+        self.bottomFrame = Frame(self.tk, background='black')
+        self.topFrame.pack(side=TOP, fill=BOTH, expand=YES)
+        self.bottomFrame.pack(side=BOTTOM, fill=BOTH, expand=YES)
         self.state = False
         self.tk.bind("<Return>", self.toggle_fullscreen)
         self.tk.bind("<Escape>", self.end_fullscreen)
@@ -324,6 +329,7 @@ class FullscreenWindow:
         self.state = False
         self.tk.attributes("-fullscreen", False)
         return "break"
+
 
 if __name__ == '__main__':
     w = FullscreenWindow()
