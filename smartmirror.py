@@ -134,77 +134,79 @@ class Weather(Frame):
             return "Error: %s. Cannot get ip." % e
 
     def get_weather(self):
-        try:
+        foo = "this function does nothing atm"
 
-            if latitude is None and longitude is None:
-                # get location
-                location_req_url = "http://freegeoip.net/json/%s" % self.get_ip()
-                r = requests.get(location_req_url)
-                location_obj = json.loads(r.text)
-
-                lat = location_obj['latitude']
-                lon = location_obj['longitude']
-
-                location2 = "%s, %s" % (location_obj['city'], location_obj['region_code'])
-
-                # get weather
-                weather_req_url = "https://api.darksky.net/forecast/%s/%s,%s?lang=%s&units=%s" % (
-                weather_api_token, lat, lon, weather_lang, weather_unit)
-            else:
-                location2 = ""
-                # get weather
-                weather_req_url = "https://api.darksky.net/forecast/%s/%s,%s?lang=%s&units=%s" % (
-                weather_api_token, latitude, longitude, weather_lang, weather_unit)
-
-            r = requests.get(weather_req_url)
-            weather_obj = json.loads(r.text)
-
-            degree_sign = u'\N{DEGREE SIGN}'
-            temperature2 = "%s%s" % (str(int(weather_obj['currently']['temperature'])), degree_sign)
-            currently2 = weather_obj['currently']['summary']
-            forecast2 = weather_obj["hourly"]["summary"]
-
-            icon_id = weather_obj['currently']['icon']
-            icon2 = None
-
-            if icon_id in icon_lookup:
-                icon2 = icon_lookup[icon_id]
-
-            if icon2 is not None:
-                if self.icon != icon2:
-                    self.icon = icon2
-                    image = Image.open(icon2)
-                    image = image.resize((100, 100), Image.ANTIALIAS)
-                    image = image.convert('RGB')
-                    photo = ImageTk.PhotoImage(image)
-
-                    self.iconLbl.config(image=photo)
-                    self.iconLbl.image = photo
-            else:
-                # remove image
-                self.iconLbl.config(image='')
-
-            if self.currently != currently2:
-                self.currently = currently2
-                self.currentlyLbl.config(text=currently2)
-            if self.forecast != forecast2:
-                self.forecast = forecast2
-                self.forecastLbl.config(text=forecast2)
-            if self.temperature != temperature2:
-                self.temperature = temperature2
-                self.temperatureLbl.config(text=temperature2)
-            if self.location != location2:
-                if location2 == ", ":
-                    self.location = "Cannot Pinpoint Location"
-                    self.locationLbl.config(text="Cannot Pinpoint Location")
-                else:
-                    self.location = location2
-                    self.locationLbl.config(text=location2)
-        except Exception as e:
-            traceback.print_exc()
-            print(f"Error: {e}. Cannot get weather.")
-
-        self.after(600000, self.get_weather)
+    #     try:
+    #
+    #         if latitude is None and longitude is None:
+    #             # get location
+    #             location_req_url = "http://freegeoip.net/json/%s" % self.get_ip()
+    #             r = requests.get(location_req_url)
+    #             location_obj = json.loads(r.text)
+    #
+    #             lat = location_obj['latitude']
+    #             lon = location_obj['longitude']
+    #
+    #             location2 = "%s, %s" % (location_obj['city'], location_obj['region_code'])
+    #
+    #             # get weather
+    #             weather_req_url = "https://api.darksky.net/forecast/%s/%s,%s?lang=%s&units=%s" % (
+    #             weather_api_token, lat, lon, weather_lang, weather_unit)
+    #         else:
+    #             location2 = ""
+    #             # get weather
+    #             weather_req_url = "https://api.darksky.net/forecast/%s/%s,%s?lang=%s&units=%s" % (
+    #             weather_api_token, latitude, longitude, weather_lang, weather_unit)
+    #
+    #         r = requests.get(weather_req_url)
+    #         weather_obj = json.loads(r.text)
+    #
+    #         degree_sign = u'\N{DEGREE SIGN}'
+    #         temperature2 = "%s%s" % (str(int(weather_obj['currently']['temperature'])), degree_sign)
+    #         currently2 = weather_obj['currently']['summary']
+    #         forecast2 = weather_obj["hourly"]["summary"]
+    #
+    #         icon_id = weather_obj['currently']['icon']
+    #         icon2 = None
+    #
+    #         if icon_id in icon_lookup:
+    #             icon2 = icon_lookup[icon_id]
+    #
+    #         if icon2 is not None:
+    #             if self.icon != icon2:
+    #                 self.icon = icon2
+    #                 image = Image.open(icon2)
+    #                 image = image.resize((100, 100), Image.ANTIALIAS)
+    #                 image = image.convert('RGB')
+    #                 photo = ImageTk.PhotoImage(image)
+    #
+    #                 self.iconLbl.config(image=photo)
+    #                 self.iconLbl.image = photo
+    #         else:
+    #             # remove image
+    #             self.iconLbl.config(image='')
+    #
+    #         if self.currently != currently2:
+    #             self.currently = currently2
+    #             self.currentlyLbl.config(text=currently2)
+    #         if self.forecast != forecast2:
+    #             self.forecast = forecast2
+    #             self.forecastLbl.config(text=forecast2)
+    #         if self.temperature != temperature2:
+    #             self.temperature = temperature2
+    #             self.temperatureLbl.config(text=temperature2)
+    #         if self.location != location2:
+    #             if location2 == ", ":
+    #                 self.location = "Cannot Pinpoint Location"
+    #                 self.locationLbl.config(text="Cannot Pinpoint Location")
+    #             else:
+    #                 self.location = location2
+    #                 self.locationLbl.config(text=location2)
+    #     except Exception as e:
+    #         traceback.print_exc()
+    #         print(f"Error: {e}. Cannot get weather.")
+    #
+    #     self.after(600000, self.get_weather)
 
     @staticmethod
     def convert_kelvin_to_fahrenheit(kelvin_temp):
