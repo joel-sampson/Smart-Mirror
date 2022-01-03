@@ -131,7 +131,7 @@ class Weather(Frame):
             return ip_json['ip']
         except Exception as e:
             traceback.print_exc()
-            return "Error: %s. Cannot get ip." % e
+            return f"Error: {e}. Cannot get ip."
 
     def get_weather(self):
         foo = "this function does nothing atm"
