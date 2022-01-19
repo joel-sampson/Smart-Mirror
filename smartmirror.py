@@ -1,13 +1,17 @@
 # smartmirror.py
 # requirements
 # requests, feedparser, traceback, Pillow
+import sys
 
 from PIL import Image, ImageTk
 from contextlib import contextmanager
 from tkinter import (BOTH, BOTTOM, E, LEFT, Label, N, RIGHT, S, TOP, Tk, W, YES, Frame)
+import argparse
+import asyncio
 import feedparser
 import json
 import locale
+import python_weather
 import requests
 import threading
 import time
@@ -19,15 +23,18 @@ ui_locale = ''  # e.g. 'fr_FR' fro French, '' as default
 time_format = 12  # 12 or 24
 date_format = "%b %d, %Y"  # check python doc for strftime() for options
 news_country_code = 'us'
-weather_api_token = '<TOKEN>'  # create account at https://darksky.net/dev/
-weather_lang = 'en'  # see https://darksky.net/dev/docs/forecast for full list of language parameters values
-weather_unit = 'us'  # see https://darksky.net/dev/docs/forecast for full list of unit parameters values
 latitude = None  # Set this if IP location lookup does not work for you (must be a string)
 longitude = None  # Set this if IP location lookup does not work for you (must be a string)
 xlarge_text_size = 94
 large_text_size = 48
 medium_text_size = 28
 small_text_size = 18
+# trying to avoid hard coding info
+parser = argparse.ArgumentParser()
+parser.add_argument("--location", "-l", default="None", required=True, help="Location for weather data")
+parser.add_argument("--fahrenheit", "-f", default=False, action="store_true")
+
+args = parser.parse_args()
 
 
 @contextmanager
@@ -43,7 +50,7 @@ def setlocale(name):  # thread proof function to work with locale
 # maps open weather icons to
 # icon reading is not impacted by the 'lang' parameter
 icon_lookup = {
-    'clear-day': "assets/Sun.png",  # clear sky day
+    'clear': "assets/Sun.png",  # clear sky day
     'wind': "assets/Wind.png",  # wind
     'cloudy': "assets/Cloud.png",  # cloudy day
     'partly-cloudy-day': "assets/PartlySunny.png",  # partly cloudy day
@@ -57,6 +64,15 @@ icon_lookup = {
     'tornado': "assests/Tornado.png",  # tornado
     'hail': "assests/Hail.png"  # hail
 }
+
+
+def get_icon(str):
+    res = None
+    print(f"{icon_lookup[str.casefold()]}")
+    # for key in icon_lookup:
+    #     print(f"{key}")
+
+    return res
 
 
 class Clock(Frame):
@@ -102,111 +118,63 @@ class Clock(Frame):
 
 
 class Weather(Frame):
-    def __init__(self, parent, *args, **kwargs):
+    def __init__(self, parent, location, imperial_units=False, *args, **kwargs):
         Frame.__init__(self, parent, bg='black')
-        self.temperature = ''
-        self.forecast = ''
-        self.location = ''
-        self.currently = ''
-        self.icon = ''
-        self.degreeFrm = Frame(self, bg="black")
-        self.degreeFrm.pack(side=TOP, anchor=W)
-        self.temperatureLbl = Label(self.degreeFrm, font=('Helvetica', xlarge_text_size), fg="white", bg="black")
+        # self.currently = ""
+        # self.forecast = ""
+        self.humid = "%"
+        # self.icon = "icon"
+        self.location = location
+        self.temperature = ""
+        self.temp_unit = python_weather.METRIC
+        self.temp_unit_str = "°C"
+        self.minmax = ""
+
+        if imperial_units:
+            self.temp_unit = python_weather.IMPERIAL
+            self.temp_unit_str = "°F"
+
+        # get weather from internets
+        self.weather_loop = asyncio.get_event_loop()
+        self.weather_loop.run_until_complete(self.get_weather())
+        self.weather_loop.close()
+
+        # construct display elements
+        self.tempFrm = Frame(self, background="black")
+        self.tempFrm.pack(side=TOP, anchor=W, fill=BOTH, expand=True)
+        self.temperatureLbl = Label(self.tempFrm, text=self.temperature, font=("Helvetica", xlarge_text_size), fg="white", bg="black")
         self.temperatureLbl.pack(side=LEFT, anchor=N)
-        self.iconLbl = Label(self.degreeFrm, bg="black")
-        self.iconLbl.pack(side=LEFT, anchor=N, padx=20)
-        self.currentlyLbl = Label(self, font=('Helvetica', medium_text_size), fg="white", bg="black")
-        self.currentlyLbl.pack(side=TOP, anchor=W)
-        self.forecastLbl = Label(self, font=('Helvetica', small_text_size), fg="white", bg="black")
-        self.forecastLbl.pack(side=TOP, anchor=W)
-        self.locationLbl = Label(self, font=('Helvetica', small_text_size), fg="white", bg="black")
+        self.temp_unitLbl = Label(self.tempFrm, text=self.temp_unit_str, font=("Helvetica", large_text_size), fg="white", bg="black")
+        self.temp_unitLbl.pack(side=LEFT, anchor=N)
+        # self.iconLbl = Label(self, fg="white", bg="black")
+        # self.iconLbl.pack(side=LEFT, anchor=N, padx=20)
+        # self.forecastLbl = Label(self, text=self.forecast, font=('Helvetica', small_text_size), fg="white", bg="black")
+        # self.forecastLbl.pack(side=TOP, anchor=W)
+        self.humidLbl = Label(self, text=self.humid, font=("Helvetica", small_text_size), fg="White", bg="black")
+        self.humidLbl.pack(side=TOP, anchor=W)
+        self.locationLbl = Label(self, text=self.location, font=('Helvetica', small_text_size), fg="white", bg="black")
         self.locationLbl.pack(side=TOP, anchor=W)
-        self.get_weather()
 
-    def get_ip(self):
-        try:
-            ip_url = "http://jsonip.com/"
-            req = requests.get(ip_url)
-            ip_json = json.loads(req.text)
-            return ip_json['ip']
-        except Exception as e:
-            traceback.print_exc()
-            return f"Error: {e}. Cannot get ip."
+    async def get_weather(self):
+        client = python_weather.Client(format=self.temp_unit)
 
-    def get_weather(self):
-        foo = "this function does nothing atm"
+        weather = await client.find(self.location)
+        self.temperature = str(weather.current.temperature)
 
-    #     try:
-    #
-    #         if latitude is None and longitude is None:
-    #             # get location
-    #             location_req_url = "http://freegeoip.net/json/%s" % self.get_ip()
-    #             r = requests.get(location_req_url)
-    #             location_obj = json.loads(r.text)
-    #
-    #             lat = location_obj['latitude']
-    #             lon = location_obj['longitude']
-    #
-    #             location2 = "%s, %s" % (location_obj['city'], location_obj['region_code'])
-    #
-    #             # get weather
-    #             weather_req_url = "https://api.darksky.net/forecast/%s/%s,%s?lang=%s&units=%s" % (
-    #             weather_api_token, lat, lon, weather_lang, weather_unit)
-    #         else:
-    #             location2 = ""
-    #             # get weather
-    #             weather_req_url = "https://api.darksky.net/forecast/%s/%s,%s?lang=%s&units=%s" % (
-    #             weather_api_token, latitude, longitude, weather_lang, weather_unit)
-    #
-    #         r = requests.get(weather_req_url)
-    #         weather_obj = json.loads(r.text)
-    #
-    #         degree_sign = u'\N{DEGREE SIGN}'
-    #         temperature2 = "%s%s" % (str(int(weather_obj['currently']['temperature'])), degree_sign)
-    #         currently2 = weather_obj['currently']['summary']
-    #         forecast2 = weather_obj["hourly"]["summary"]
-    #
-    #         icon_id = weather_obj['currently']['icon']
-    #         icon2 = None
-    #
-    #         if icon_id in icon_lookup:
-    #             icon2 = icon_lookup[icon_id]
-    #
-    #         if icon2 is not None:
-    #             if self.icon != icon2:
-    #                 self.icon = icon2
-    #                 image = Image.open(icon2)
-    #                 image = image.resize((100, 100), Image.ANTIALIAS)
-    #                 image = image.convert('RGB')
-    #                 photo = ImageTk.PhotoImage(image)
-    #
-    #                 self.iconLbl.config(image=photo)
-    #                 self.iconLbl.image = photo
-    #         else:
-    #             # remove image
-    #             self.iconLbl.config(image='')
-    #
-    #         if self.currently != currently2:
-    #             self.currently = currently2
-    #             self.currentlyLbl.config(text=currently2)
-    #         if self.forecast != forecast2:
-    #             self.forecast = forecast2
-    #             self.forecastLbl.config(text=forecast2)
-    #         if self.temperature != temperature2:
-    #             self.temperature = temperature2
-    #             self.temperatureLbl.config(text=temperature2)
-    #         if self.location != location2:
-    #             if location2 == ", ":
-    #                 self.location = "Cannot Pinpoint Location"
-    #                 self.locationLbl.config(text="Cannot Pinpoint Location")
-    #             else:
-    #                 self.location = location2
-    #                 self.locationLbl.config(text=location2)
-    #     except Exception as e:
-    #         traceback.print_exc()
-    #         print(f"Error: {e}. Cannot get weather.")
-    #
-    #     self.after(600000, self.get_weather)
+        self.humid = str(weather.current.humidity) + "%"
+        print(f"location: {weather.location_name}({weather.location_code})")
+        print(f"temp: {weather.current.temperature}")
+        print(f"humid: {weather.current.humidity}")
+        print(f"Feels: {weather.current.feels_like}")
+        print(f"info: {weather.current.date}, {weather.current.sky_text}({weather.current.sky_code}), {weather.current.temperature}")
+
+        for forecast in weather.forecasts:
+            print(f"{forecast.date} {forecast.sky_text}({forecast.sky_code_day}) {forecast.temperature}°{weather.degree_type}")
+            print(f"min:\t{forecast.low}\nmax:\t{forecast.high}")
+
+        await client.close()
+        # need await
+        # self.after(200, self.get_weather)
 
     @staticmethod
     def convert_kelvin_to_fahrenheit(kelvin_temp):
@@ -297,8 +265,7 @@ class CalendarEvent(Frame):
         self.eventNameLbl.pack(side=TOP, anchor=E)
 
 
-class FullscreenWindow:
-
+class FullScreenWindow:
     def __init__(self):
         self.tk = Tk()
         self.tk.configure(background='black')
@@ -307,32 +274,38 @@ class FullscreenWindow:
         self.topFrame.pack(side=TOP, fill=BOTH, expand=YES)
         self.bottomFrame.pack(side=BOTTOM, fill=BOTH, expand=YES)
         self.state = False
-        self.tk.bind("<Return>", self.toggle_fullscreen)
-        self.tk.bind("<Escape>", self.end_fullscreen)
+        self.tk.bind("<Return>", self.toggle_full_screen)
+        self.tk.bind("<Escape>", self.destroy_session)
         # clock
         self.clock = Clock(self.topFrame)
         self.clock.pack(side=RIGHT, anchor=N, padx=100, pady=60)
         # weather
-        self.weather = Weather(self.topFrame)
+        self.weather = Weather(self.topFrame, location=args.location)
         self.weather.pack(side=LEFT, anchor=N, padx=100, pady=60)
         # news
         self.news = News(self.bottomFrame)
         self.news.pack(side=LEFT, anchor=S, padx=100, pady=60)
-        # calender - removing for now
-        # self.calender = Calendar(self.bottomFrame)
-        # self.calender.pack(side = RIGHT, anchor=S, padx=100, pady=60)
+        # start fullscreen
+        # self.toggle_full_screen()
 
-    def toggle_fullscreen(self, event=None):
+    def toggle_full_screen(self, event=None):
         self.state = not self.state  # Just toggling the boolean
         self.tk.attributes("-fullscreen", self.state)
         return "break"
 
-    def end_fullscreen(self, event=None):
+    def end_full_screen(self, event=None):
         self.state = False
         self.tk.attributes("-fullscreen", False)
         return "break"
 
+    def destroy_session(self, event=None):
+        self.tk.destroy()
+        return "break"
+
 
 if __name__ == '__main__':
-    w = FullscreenWindow()
+    print(f"{args}")
+    # get_icon("Cloudy")
+    w = FullScreenWindow()
     w.tk.mainloop()
+
