@@ -136,8 +136,7 @@ class Weather(Frame):
 
         # get weather from internets
         self.weather_loop = asyncio.get_event_loop()
-        self.weather_loop.run_until_complete(self.get_weather())
-        self.weather_loop.close()
+        self.get_weather()
 
         # construct display elements
         self.tempFrm = Frame(self, background="black")
@@ -155,7 +154,10 @@ class Weather(Frame):
         self.locationLbl = Label(self, text=self.location, font=('Helvetica', small_text_size), fg="white", bg="black")
         self.locationLbl.pack(side=TOP, anchor=W)
 
-    async def get_weather(self):
+    def __del__(self):
+        self.weather_loop.close()
+
+    async def async_get_weather(self):
         client = python_weather.Client(format=self.temp_unit)
 
         weather = await client.find(self.location)
@@ -173,8 +175,11 @@ class Weather(Frame):
             print(f"min:\t{forecast.low}\nmax:\t{forecast.high}")
 
         await client.close()
-        # need await
-        # self.after(200, self.get_weather)
+
+    def get_weather(self):
+        self.weather_loop.run_until_complete(self.async_get_weather())
+        print("updated weather")
+        self.after(10000, self.get_weather)
 
     @staticmethod
     def convert_kelvin_to_fahrenheit(kelvin_temp):
