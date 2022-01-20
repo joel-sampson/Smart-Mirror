@@ -211,7 +211,7 @@ class News(Frame):
             traceback.print_exc()
             print(f"Error: {e}. Cannot get news.")
 
-        self.after(600000, self.get_headlines)
+        self.after(200000, self.get_headlines)
 
 
 class NewsHeadline(Frame):
