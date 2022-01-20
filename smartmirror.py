@@ -127,12 +127,12 @@ class Weather(Frame):
         self.location = location
         self.temperature = ""
         self.temp_unit = python_weather.METRIC
-        self.temp_unit_str = "°C"
+        self.temp_unit_str = "℃"
         self.minmax = ""
 
         if imperial_units:
             self.temp_unit = python_weather.IMPERIAL
-            self.temp_unit_str = "°F"
+            self.temp_unit_str = "℉"
 
         # get weather from internets
         self.weather_loop = asyncio.get_event_loop()
