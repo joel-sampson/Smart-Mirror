@@ -51,19 +51,19 @@ def setlocale(name):  # thread proof function to work with locale
 # icon reading is not impacted by the 'lang' parameter
 icon_lookup = {
     "clear": "assets/Sun.png",  # clear sky day
-    "wind": "assets/Wind.png",  # wind
+    "clear-night": "assets/Moon.png",  # clear sky night
     "cloudy": "assets/Cloud.png",  # cloudy day
+    "fog": "assets/Haze.png",  # fog day
+    "hail": "assets/Hail.png",  # hail
+    "humid": "assets/humid.png",  # humidity % sign
     "partly-cloudy-day": "assets/PartlySunny.png",  # partly cloudy day
+    "partly-cloudy-night": "assets/PartlyMoon.png",  # scattered clouds night
     "rain": "assets/Rain.png",  # rain day
     "snow": "assets/Snow.png",  # snow day
     "snow-thin": "assets/Snow.png",  # sleet day
-    "fog": "assets/Haze.png",  # fog day
-    "clear-night": "assets/Moon.png",  # clear sky night
-    "partly-cloudy-night": "assets/PartlyMoon.png",  # scattered clouds night
     "thunderstorm": "assets/Storm.png",  # thunderstorm
-    "tornado": "assests/Tornado.png",  # tornado
-    "hail": "assests/Hail.png"  # hail
-
+    "tornado": "assets/Tornado.png",  # tornado
+    "wind": "assets/Wind.png",  # wind
 }
 
 
