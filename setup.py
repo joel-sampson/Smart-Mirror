@@ -11,7 +11,7 @@ if os.getuid() != 0:
 
 # Install the requirements if the system does not have it installed
 print('INFO: Checking and installing requirements')
-os.system('! dpkg -S python-imaging-tk && apt-get -y install python-imaging-tk')
+os.system('! dpkg -S python3-tk && apt-get -y install python3-tk')
 
 # Generate the requirements from the file for old instructions
 print('INFO: Generating the requirements from requirements.txt')
