@@ -172,7 +172,7 @@ class Weather(Frame):
         self.temperature = str(weather.current.temperature)
 
         self.humid = str(weather.current.humidity)
-
+        # forecast includes the previous two days so today's "forecast" is the second item
         for forecast in weather.forecasts[2:3]:
             self.minmax = f"{forecast.low}-{forecast.high}"
 
