@@ -152,10 +152,11 @@ class Weather(Frame):
         # Keeping image inline with text requires a frame to hold both items
         self.humidFrame = Frame(self, background="black")
         self.humidFrame.pack(side=TOP, anchor=W, fill=BOTH, expand=True)
-        self.humidLbl = Label(self.humidFrame, text=self.humid, font=("Helvetica", small_text_size), fg="white", bg="black")
+        self.humidLbl = Label(self.humidFrame, text=self.humid, font=("Helvetica", 24), fg="white", bg="black")
         self.humidLbl.pack(side=LEFT, anchor=W)
         self.humid_iconLbl = Label(self.humidFrame, bg="black")
-        image = get_icon("humid", x=40, y=40)
+        # 24 pixels seems to be best at 1080p and to line up with humidFrame
+        image = get_icon("humid", x=24, y=24)
         self.humid_iconLbl.config(image=image)
         self.humid_iconLbl.image = image
         self.humid_iconLbl.pack(side=LEFT, anchor=W, pady=5)
@@ -195,7 +196,7 @@ class News(Frame):
         Frame.__init__(self, parent, *args, **kwargs)
         self.config(bg='black')
         self.title = 'News'  # 'News' is more internationally generic
-        self.newsLbl = Label(self, text=self.title, font=('Helvetica', medium_text_size), fg="white", bg="black")
+        self.newsLbl = Label(self, text=self.title, font=('Helvetica', small_text_size), fg="white", bg="black")
         self.newsLbl.pack(side=TOP, anchor=W)
         self.headlinesContainer = Frame(self, bg="black")
         self.headlinesContainer.pack(side=TOP)
