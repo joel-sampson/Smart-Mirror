@@ -21,17 +21,16 @@ LOCALE_LOCK = threading.Lock()
 ui_locale = ''  # e.g. 'fr_FR' fro French, '' as default
 time_format = 12  # 12 or 24
 date_format = "%b %d, %Y"  # check python doc for strftime() for options
-news_country_code = 'us'
-latitude = None  # Set this if IP location lookup does not work for you (must be a string)
-longitude = None  # Set this if IP location lookup does not work for you (must be a string)
 xlarge_text_size = 94
 large_text_size = 48
 medium_text_size = 28
 small_text_size = 18
+xsmall_text_size = 15
 # trying to avoid hard coding info
 parser = argparse.ArgumentParser()
 parser.add_argument("--location", "-l", default="None", required=True, help="Location for weather data")
 parser.add_argument("--fahrenheit", "-f", default=False, action="store_true")
+parser.add_argument("--news", "-n", default=None, required=False, help="Add google news country code eg. \"us\"")
 
 args = parser.parse_args()
 
@@ -200,9 +199,9 @@ class Weather(Frame):
 class News(Frame):
     def __init__(self, parent, *args, **kwargs):
         Frame.__init__(self, parent, *args, **kwargs)
-        self.config(bg='black')
-        self.title = 'News'  # 'News' is more internationally generic
-        self.newsLbl = Label(self, text=self.title, font=('Helvetica', medium_text_size), fg="white", bg="black")
+        self.config(bg="black")
+        self.title = "News"  # 'News' is more internationally generic
+        self.newsLbl = Label(self, text=self.title, font=("Helvetica", medium_text_size), fg="white", bg="black")
         self.newsLbl.pack(side=TOP, anchor=W)
         self.headlinesContainer = Frame(self, bg="black")
         self.headlinesContainer.pack(side=TOP)
@@ -213,10 +212,10 @@ class News(Frame):
             # remove all children
             for widget in self.headlinesContainer.winfo_children():
                 widget.destroy()
-            if news_country_code == None:
+            if args.news == None:
                 headlines_url = "https://news.google.com/news?ned=us&output=rss"
             else:
-                headlines_url = f"https://news.google.com/news?ned={news_country_code}&output=rss"
+                headlines_url = f"https://news.google.com/news?ned={args.news}&output=rss"
 
             feed = feedparser.parse(headlines_url)
 
