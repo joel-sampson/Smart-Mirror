@@ -25,8 +25,8 @@ xlarge_text_size = 94
 large_text_size = 48
 medium_text_size = 28
 small_text_size = 18
-xsmall_text_size = 15
-# trying to avoid hard coding info
+xsmall_text_size = 14
+# trying to avoid hard coding
 parser = argparse.ArgumentParser()
 parser.add_argument("--location", "-l", default="None", required=True, help="Location for weather data")
 parser.add_argument("--fahrenheit", "-f", default=False, action="store_true")
@@ -51,7 +51,7 @@ icon_lookup = {
     "clear": "assets/Sun.png",  # clear sky day
     "clear-night": "assets/Moon.png",  # clear sky night
     "cloudy": "assets/Cloud.png",  # cloudy day
-    "error": "assets/exclamation.png",  # something went wrong
+    "error": "assets/exclamation.png",  # something went wrong useful for debugging with get_icon()
     "fog": "assets/Haze.png",  # fog day
     "hail": "assets/Hail.png",  # hail
     "humid": "assets/humid.png",  # humidity % sign
@@ -127,16 +127,20 @@ class Clock(Frame):
 
 class Weather(Frame):
     def __init__(self, parent, location, imperial_units=False, *args, **kwargs):
-        Frame.__init__(self, parent, bg='black')
-        # self.currently = ""
+        Frame.__init__(self, parent, bg="black")
         # self.forecast = ""
         self.humid = "%"
-        # self.icon = "icon"
         self.location = location
         self.temperature = ""
         self.temp_unit = python_weather.METRIC
         self.temp_unit_str = "℃"
         self.minmax = ""
+        self.tempFrame = Frame(self, background="black")
+        # current weather icon
+        self.current_weather_iconLbl = Label(self.tempFrame, bg="black")
+        image = get_icon("error", x=90, y=90)
+        self.current_weather_iconLbl.config(image=image)
+        self.current_weather_iconLbl.image = image
 
         if imperial_units:
             self.temp_unit = python_weather.IMPERIAL
@@ -147,12 +151,12 @@ class Weather(Frame):
         self.get_weather()
 
         # construct display elements
-        self.tempFrame = Frame(self, background="black")
         self.tempFrame.pack(side=TOP, anchor=W, fill=BOTH, expand=True)
-        self.temperatureLbl = Label(self.tempFrame, text=self.temperature, font=("Helvetica", xlarge_text_size), fg="white", bg="black")
-        self.temperatureLbl.pack(side=LEFT, anchor=N)
+        self.tempLbl = Label(self.tempFrame, text=self.temperature, font=("Helvetica", xlarge_text_size), fg="white", bg="black")
+        self.tempLbl.pack(side=LEFT, anchor=N)
         self.temp_unitLbl = Label(self.tempFrame, text=self.temp_unit_str, font=("Helvetica", large_text_size), fg="white", bg="black")
         self.temp_unitLbl.pack(side=LEFT, anchor=N)
+        self.current_weather_iconLbl.pack(side=LEFT, anchor=N, padx=20)
         self.minmaxLbl = Label(self, text=self.minmax, font=("Helvetica", medium_text_size), fg="white", bg="black")
         self.minmaxLbl.pack(side=TOP, anchor=W)
         # Keeping image inline with text requires a frame to hold both items
@@ -166,7 +170,7 @@ class Weather(Frame):
         self.humid_iconLbl.config(image=image)
         self.humid_iconLbl.image = image
         self.humid_iconLbl.pack(side=LEFT, anchor=W, pady=5)
-        self.locationLbl = Label(self, text=self.location, font=('Helvetica', small_text_size), fg="white", bg="black")
+        self.locationLbl = Label(self, text=self.location, font=("Helvetica", small_text_size), fg="white", bg="black")
         self.locationLbl.pack(side=TOP, anchor=W)
 
     def __del__(self):
@@ -177,7 +181,9 @@ class Weather(Frame):
 
         weather = await client.find(self.location)
         self.temperature = str(weather.current.temperature)
-
+        image = get_icon(weather.current.sky_text, x=90, y=90)
+        self.current_weather_iconLbl.config(image=image)
+        self.current_weather_iconLbl.image = image
         self.humid = str(weather.current.humidity)
         # forecast includes the previous two days so today's "forecast" is the second item
         for forecast in weather.forecasts[2:3]:
@@ -212,7 +218,7 @@ class News(Frame):
             # remove all children
             for widget in self.headlinesContainer.winfo_children():
                 widget.destroy()
-            if args.news == None:
+            if args.news is None:
                 headlines_url = "https://news.google.com/news?ned=us&output=rss"
             else:
                 headlines_url = f"https://news.google.com/news?ned={args.news}&output=rss"
@@ -243,7 +249,7 @@ class NewsHeadline(Frame):
         self.iconLbl.pack(side=LEFT, anchor=N)
 
         self.eventName = event_name
-        self.eventNameLbl = Label(self, text=self.eventName, font=("Helvetica", small_text_size), fg="white",
+        self.eventNameLbl = Label(self, text=self.eventName, font=("Helvetica", xsmall_text_size), fg="white",
                                   bg="black")
         self.eventNameLbl.pack(side=LEFT, anchor=N)
 
