@@ -1,7 +1,9 @@
+#!/usr/bin/env python3
 # smartmirror.py
 # requirements
 # requests, feedparser, traceback, Pillow
 
+import sys
 from PIL import Image, ImageTk
 from contextlib import contextmanager
 from tkinter import (BOTH, BOTTOM, E, LEFT, Label, N, RIGHT, S, TOP, Tk, W, YES, Frame)
