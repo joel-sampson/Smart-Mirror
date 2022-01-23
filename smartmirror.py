@@ -1,7 +1,6 @@
 # smartmirror.py
 # requirements
 # requests, feedparser, traceback, Pillow
-import sys
 
 from PIL import Image, ImageTk
 from contextlib import contextmanager
@@ -9,10 +8,8 @@ from tkinter import (BOTH, BOTTOM, E, LEFT, Label, N, RIGHT, S, TOP, Tk, W, YES,
 import argparse
 import asyncio
 import feedparser
-import json
 import locale
 import python_weather
-import requests
 import threading
 import time
 import traceback
