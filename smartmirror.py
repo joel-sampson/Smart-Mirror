@@ -289,7 +289,7 @@ class FullScreenWindow:
         self.news = News(self.bottomFrame)
         self.news.pack(side=LEFT, anchor=S, padx=100, pady=60)
         # start fullscreen
-        # self.toggle_full_screen()
+        self.toggle_full_screen()
 
     def toggle_full_screen(self, event=None):
         self.state = not self.state  # Just toggling the boolean
@@ -311,4 +311,3 @@ if __name__ == '__main__':
     # get_icon("Cloudy")
     w = FullScreenWindow()
     w.tk.mainloop()
-
