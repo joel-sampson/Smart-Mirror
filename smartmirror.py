@@ -64,11 +64,13 @@ icon_lookup = {
 }
 
 
-def get_icon(str):
+def get_icon(str, x=100, y=100):
     res = None
-    print(f"{icon_lookup[str.casefold()]}")
-    # for key in icon_lookup:
-    #     print(f"{key}")
+    # we use casefold because external weather api may return Capitalised or not
+    image = Image.open(icon_lookup[str.casefold()])
+    image = image.resize((x, y), Image.ANTIALIAS)
+    image = image.convert("RGB")
+    res = ImageTk.PhotoImage(image)
 
     return res
 
@@ -137,18 +139,24 @@ class Weather(Frame):
         self.get_weather()
 
         # construct display elements
-        self.tempFrm = Frame(self, background="black")
-        self.tempFrm.pack(side=TOP, anchor=W, fill=BOTH, expand=True)
-        self.temperatureLbl = Label(self.tempFrm, text=self.temperature, font=("Helvetica", xlarge_text_size), fg="white", bg="black")
+        self.tempFrame = Frame(self, background="black")
+        self.tempFrame.pack(side=TOP, anchor=W, fill=BOTH, expand=True)
+        self.temperatureLbl = Label(self.tempFrame, text=self.temperature, font=("Helvetica", xlarge_text_size), fg="white", bg="black")
         self.temperatureLbl.pack(side=LEFT, anchor=N)
-        self.temp_unitLbl = Label(self.tempFrm, text=self.temp_unit_str, font=("Helvetica", large_text_size), fg="white", bg="black")
+        self.temp_unitLbl = Label(self.tempFrame, text=self.temp_unit_str, font=("Helvetica", large_text_size), fg="white", bg="black")
         self.temp_unitLbl.pack(side=LEFT, anchor=N)
-        # self.iconLbl = Label(self, fg="white", bg="black")
-        # self.iconLbl.pack(side=LEFT, anchor=N, padx=20)
-        # self.forecastLbl = Label(self, text=self.forecast, font=('Helvetica', small_text_size), fg="white", bg="black")
-        # self.forecastLbl.pack(side=TOP, anchor=W)
-        self.humidLbl = Label(self, text=self.humid, font=("Helvetica", small_text_size), fg="White", bg="black")
-        self.humidLbl.pack(side=TOP, anchor=W)
+        self.minmaxLbl = Label(self, text=self.minmax, font=("Helvetica", medium_text_size), fg="white", bg="black")
+        self.minmaxLbl.pack(side=TOP, anchor=W)
+        # Keeping image inline with text requires a frame to hold both items
+        self.humidFrame = Frame(self, background="black")
+        self.humidFrame.pack(side=TOP, anchor=W, fill=BOTH, expand=True)
+        self.humidLbl = Label(self.humidFrame, text=self.humid, font=("Helvetica", small_text_size), fg="white", bg="black")
+        self.humidLbl.pack(side=LEFT, anchor=W)
+        self.humid_iconLbl = Label(self.humidFrame, bg="black")
+        image = get_icon("humid", x=40, y=40)
+        self.humid_iconLbl.config(image=image)
+        self.humid_iconLbl.image = image
+        self.humid_iconLbl.pack(side=LEFT, anchor=W, pady=5)
         self.locationLbl = Label(self, text=self.location, font=('Helvetica', small_text_size), fg="white", bg="black")
         self.locationLbl.pack(side=TOP, anchor=W)
 
@@ -161,23 +169,19 @@ class Weather(Frame):
         weather = await client.find(self.location)
         self.temperature = str(weather.current.temperature)
 
-        self.humid = str(weather.current.humidity) + "%"
-        print(f"location: {weather.location_name}({weather.location_code})")
-        print(f"temp: {weather.current.temperature}")
-        print(f"humid: {weather.current.humidity}")
-        print(f"Feels: {weather.current.feels_like}")
-        print(f"info: {weather.current.date}, {weather.current.sky_text}({weather.current.sky_code}), {weather.current.temperature}")
+        self.humid = str(weather.current.humidity)
 
-        for forecast in weather.forecasts:
-            print(f"{forecast.date} {forecast.sky_text}({forecast.sky_code_day}) {forecast.temperature}°{weather.degree_type}")
-            print(f"min:\t{forecast.low}\nmax:\t{forecast.high}")
+        for forecast in weather.forecasts[2:3]:
+            self.minmax = f"{forecast.low}-{forecast.high}"
 
         await client.close()
 
+    # after() function needs a non async wrapper
     def get_weather(self):
         self.weather_loop.run_until_complete(self.async_get_weather())
         print("updated weather")
-        self.after(10000, self.get_weather)
+        # update every 30 mins
+        self.after(1800000, self.get_weather)
 
     @staticmethod
     def convert_kelvin_to_fahrenheit(kelvin_temp):
