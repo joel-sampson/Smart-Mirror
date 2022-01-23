@@ -52,6 +52,7 @@ icon_lookup = {
     "clear": "assets/Sun.png",  # clear sky day
     "clear-night": "assets/Moon.png",  # clear sky night
     "cloudy": "assets/Cloud.png",  # cloudy day
+    "error": "assets/exclamation.png",  # something went wrong
     "fog": "assets/Haze.png",  # fog day
     "hail": "assets/Hail.png",  # hail
     "humid": "assets/humid.png",  # humidity % sign
@@ -66,10 +67,16 @@ icon_lookup = {
 }
 
 
-def get_icon(str, x=100, y=100):
+def get_icon(icon_name, x=100, y=100):
     res = None
-    # we use casefold because external weather api may return Capitalised or not
-    image = Image.open(icon_lookup[str.casefold()])
+    image = None
+    try:
+        # we use casefold because external weather api may return Capitalised or not
+        image = Image.open(icon_lookup[icon_name.casefold()])
+    except Exception as e:
+        print(f"Error: {e}. Cannot get {icon_name}")
+        image = Image.open(icon_lookup["error"])
+
     image = image.resize((x, y), Image.ANTIALIAS)
     image = image.convert("RGB")
     res = ImageTk.PhotoImage(image)
@@ -226,19 +233,19 @@ class News(Frame):
 
 class NewsHeadline(Frame):
     def __init__(self, parent, event_name=""):
-        Frame.__init__(self, parent, bg='black')
+        Frame.__init__(self, parent, bg="black")
 
         image = Image.open("assets/Newspaper.png")
         image = image.resize((25, 25), Image.ANTIALIAS)
-        image = image.convert('RGB')
+        image = image.convert("RGB")
         photo = ImageTk.PhotoImage(image)
 
-        self.iconLbl = Label(self, bg='black', image=photo)
+        self.iconLbl = Label(self, bg="black", image=photo)
         self.iconLbl.image = photo
         self.iconLbl.pack(side=LEFT, anchor=N)
 
         self.eventName = event_name
-        self.eventNameLbl = Label(self, text=self.eventName, font=('Helvetica', small_text_size), fg="white",
+        self.eventNameLbl = Label(self, text=self.eventName, font=("Helvetica", small_text_size), fg="white",
                                   bg="black")
         self.eventNameLbl.pack(side=LEFT, anchor=N)
 
@@ -315,6 +322,5 @@ class FullScreenWindow:
 
 if __name__ == '__main__':
     print(f"{args}")
-    # get_icon("Cloudy")
     w = FullScreenWindow()
     w.tk.mainloop()
