@@ -55,6 +55,7 @@ icon_lookup = {
     "fog": "assets/Haze.png",  # fog day
     "hail": "assets/Hail.png",  # hail
     "humid": "assets/humid.png",  # humidity % sign
+    "mostly cloudy": "assets/Cloud.png",  # cloudy day
     "partly-cloudy-day": "assets/PartlySunny.png",  # partly cloudy day
     "partly-cloudy-night": "assets/PartlyMoon.png",  # scattered clouds night
     "rain": "assets/Rain.png",  # rain day
