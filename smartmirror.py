@@ -189,7 +189,6 @@ class Weather(Frame):
     # after() function needs a non async wrapper
     def get_weather(self):
         self.weather_loop.run_until_complete(self.async_get_weather())
-        print("updated weather")
         # update every 30 mins
         self.after(1800000, self.get_weather)
 
@@ -203,7 +202,7 @@ class News(Frame):
         Frame.__init__(self, parent, *args, **kwargs)
         self.config(bg='black')
         self.title = 'News'  # 'News' is more internationally generic
-        self.newsLbl = Label(self, text=self.title, font=('Helvetica', small_text_size), fg="white", bg="black")
+        self.newsLbl = Label(self, text=self.title, font=('Helvetica', medium_text_size), fg="white", bg="black")
         self.newsLbl.pack(side=TOP, anchor=W)
         self.headlinesContainer = Frame(self, bg="black")
         self.headlinesContainer.pack(side=TOP)
@@ -295,13 +294,13 @@ class FullScreenWindow:
         self.tk.bind("<Escape>", self.destroy_session)
         # clock
         self.clock = Clock(self.topFrame)
-        self.clock.pack(side=RIGHT, anchor=N, padx=100, pady=60)
+        self.clock.pack(side=RIGHT, anchor=N, padx=0, pady=60)
         # weather
         self.weather = Weather(self.topFrame, location=args.location)
-        self.weather.pack(side=LEFT, anchor=N, padx=100, pady=60)
+        self.weather.pack(side=LEFT, anchor=N, padx=80, pady=60)
         # news
         self.news = News(self.bottomFrame)
-        self.news.pack(side=LEFT, anchor=S, padx=100, pady=60)
+        self.news.pack(side=LEFT, anchor=S, padx=5, pady=60)
         # start fullscreen
         self.toggle_full_screen()
 
